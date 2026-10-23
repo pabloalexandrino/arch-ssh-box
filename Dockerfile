@@ -6,7 +6,7 @@ ARG MYSQL_VERSION=8.4.8
 
 # --disable-sandbox: pacman's seccomp sandbox fails under emulated (non-native) builds
 RUN pacman -Syu --disable-sandbox --noconfirm --needed openssh zsh tmux git neovim nodejs npm base-devel curl wget ripgrep fzf jq sudo \
-        unzip python uv github-cli aws-cli-v2 valkey libaio numactl ncurses libarchive \
+        unzip rsync python uv github-cli aws-cli-v2 valkey libaio numactl ncurses libarchive \
     && pacman -Scc --noconfirm
 
 RUN npm i -g @anthropic-ai/claude-code @openai/codex && node /usr/lib/node_modules/@anthropic-ai/claude-code/install.cjs && claude --version && npm cache clean --force
@@ -28,8 +28,10 @@ RUN curl -fsSL https://cdn.mysql.com/Downloads/MySQL-8.4/mysql-${MYSQL_VERSION}-
 RUN curl -fsSL https://github.com/oven-sh/bun/releases/latest/download/bun-linux-x64.zip -o /tmp/bun.zip \
     && bsdtar -xf /tmp/bun.zip -C /tmp && install -m755 /tmp/bun-linux-x64/bun /usr/local/bin/bun \
     && curl -fsSL https://github.com/rtk-ai/rtk/releases/latest/download/rtk-x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin rtk \
-    && curl -fsSL https://github.com/akitaonrails/ai-memory/releases/latest/download/ai-memory-linux-x86_64.tar.gz | tar xz -C /tmp ./ai-memory \
-    && install -m755 /tmp/ai-memory /usr/local/bin/ai-memory \
+    && mkdir -p /tmp/aim /usr/local/share/ai-memory \
+    && curl -fsSL https://github.com/akitaonrails/ai-memory/releases/latest/download/ai-memory-linux-x86_64.tar.gz | tar xz -C /tmp/aim \
+    && install -m755 /tmp/aim/ai-memory /usr/local/bin/ai-memory \
+    && cp -r /tmp/aim/hooks /tmp/aim/crates /usr/local/share/ai-memory/ \
     && curl -fsSL https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm -o /tmp/smp.rpm \
     && bsdtar -xf /tmp/smp.rpm -C /tmp && install -m755 /tmp/usr/local/sessionmanagerplugin/bin/session-manager-plugin /usr/local/bin/ \
     && rm -rf /tmp/* \
