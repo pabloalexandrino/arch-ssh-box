@@ -1,0 +1,28 @@
+#!/bin/bash
+# Starts the per-user services whose data lives in the persistent home volume.
+# Idempotent: skips what is already running. Everything binds to 127.0.0.1 only.
+# Run as pablo (the entrypoint does it on boot; run it by hand after a crash).
+set -u
+D="$HOME/.local/share"
+L="$HOME/.local/state/box"
+mkdir -p "$L"
+
+# Anchored patterns: an interactive shell or grep that mentions a service must not count.
+running() { pgrep -u "$(id -u)" -f "$1" >/dev/null; }
+
+# ai-memory MCP server (kept alive by a small restart loop)
+if [ -d "$D/ai-memory" ] && ! running '^bash -c while true; do ai-memory '; then
+    nohup bash -c "while true; do ai-memory --data-dir '$D/ai-memory' serve --transport http --enable-web >> '$L/ai-memory.log' 2>&1; sleep 5; done" >/dev/null 2>&1 &
+fi
+
+# MySQL 8.4 (initialise once with: mysqld --initialize-insecure --datadir=$D/mysql)
+if [ -d "$D/mysql/mysql" ] && ! running '^mysqld --datadir'; then
+    nohup mysqld --datadir="$D/mysql" --socket=/tmp/mysql.sock --bind-address=127.0.0.1 --port=3306 \
+        --mysqlx=OFF --log-error="$L/mysql.log" >/dev/null 2>&1 &
+fi
+
+# Valkey (Redis-compatible)
+if ! running '^valkey-server'; then
+    mkdir -p "$D/valkey"
+    valkey-server --bind 127.0.0.1 --port 6379 --dir "$D/valkey" --daemonize yes --logfile "$L/valkey.log"
+fi

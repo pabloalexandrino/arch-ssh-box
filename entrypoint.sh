@@ -8,4 +8,6 @@ mkdir -p $H/.ssh $H/.sshd
 if [ -n "$SSH_PUBLIC_KEY" ]; then echo "$SSH_PUBLIC_KEY" > $H/.ssh/authorized_keys; fi
 chown -R pablo:pablo $H
 chmod 700 $H/.ssh $H/.sshd; chmod 600 $H/.ssh/authorized_keys $H/.sshd/ssh_host_ed25519_key
+# services whose data lives in the volume (ai-memory, mysql, valkey)
+runuser -u pablo -- env HOME=$H /usr/local/bin/box-services || true
 exec /usr/bin/sshd -D -e

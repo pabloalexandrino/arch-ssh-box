@@ -1,4 +1,6 @@
 export PATH="$HOME/.local/bin:$PATH"
+# npm -g installs land in the persistent volume
+export NPM_CONFIG_PREFIX="$HOME/.local"
 export EDITOR=nvim
 alias ll='ls -lah --color=auto'
 alias v=nvim
