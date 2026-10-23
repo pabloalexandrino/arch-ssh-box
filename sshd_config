@@ -1,0 +1,6 @@
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+AllowUsers pablo
+HostKey /home/pablo/.sshd/ssh_host_ed25519_key
+ClientAliveInterval 30
