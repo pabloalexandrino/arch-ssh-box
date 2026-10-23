@@ -26,3 +26,8 @@ if ! running '^valkey-server'; then
     mkdir -p "$D/valkey"
     valkey-server --bind 127.0.0.1 --port 6379 --dir "$D/valkey" --daemonize yes --logfile "$L/valkey.log"
 fi
+
+# Personal boot hook kept in the volume (symlinks, sync loops...): not part of this public image
+if [ -x "$HOME/.config/box/boot.sh" ]; then
+    "$HOME/.config/box/boot.sh" >> "$L/boot.log" 2>&1 || true
+fi
